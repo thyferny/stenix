@@ -162,37 +162,6 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
      * @param expansionFactor The array will be expanded based on this
      * parameter.
      * @throws MathIllegalArgumentException if parameters are not valid.
-     * @deprecated As of 3.1. Please use
-     * {@link #ResizableDoubleArray(int,double)} instead.
-     */
-    @Deprecated
-    public ResizableDoubleArray(int initialCapacity,
-                                float expansionFactor)
-        throws MathIllegalArgumentException {
-        this(initialCapacity,
-             (double) expansionFactor);
-    }
-
-    /**
-     * Creates an instance with the specified initial capacity
-     * and expansion factor.
-     * The remaining properties take default values:
-     * <ul>
-     *  <li>{@code expansionMode = MULTIPLICATIVE}</li>
-     *  <li>{@code contractionCriterion = 0.5 + expansionFactor}</li>
-     * </ul>
-     * <br/>
-     * Throws IllegalArgumentException if the following conditions are
-     * not met:
-     * <ul>
-     *  <li>{@code initialCapacity > 0}</li>
-     *  <li>{@code expansionFactor > 1}</li>
-     * </ul>
-     *
-     * @param initialCapacity Initial size of the internal storage array.
-     * @param expansionFactor The array will be expanded based on this
-     * parameter.
-     * @throws MathIllegalArgumentException if parameters are not valid.
      * @since 3.1
      */
     public ResizableDoubleArray(int initialCapacity,
@@ -201,37 +170,6 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
         this(initialCapacity,
              expansionFactor,
              DEFAULT_CONTRACTION_DELTA + expansionFactor);
-    }
-
-    /**
-     * Creates an instance with the specified initialCapacity,
-     * expansionFactor, and contractionCriterion.
-     * The expansion mode will default to {@code MULTIPLICATIVE}.
-     * <br/>
-     * Throws IllegalArgumentException if the following conditions are
-     * not met:
-     * <ul>
-     *  <li>{@code initialCapacity > 0}</li>
-     *  <li>{@code expansionFactor > 1}</li>
-     *  <li>{@code contractionCriterion >= expansionFactor}</li>
-     * </ul>
-     *
-     * @param initialCapacity Initial size of the internal storage array..
-     * @param expansionFactor The array will be expanded based on this
-     * parameter.
-     * @param contractionCriteria Contraction criteria.
-     * @throws MathIllegalArgumentException if parameters are not valid.
-     * @deprecated As of 3.1. Please use
-     * {@link #ResizableDoubleArray(int,double,double)} instead.
-     */
-    @Deprecated
-    public ResizableDoubleArray(int initialCapacity,
-                                float expansionFactor,
-                                float contractionCriteria)
-        throws MathIllegalArgumentException {
-        this(initialCapacity,
-             (double) expansionFactor,
-             (double) contractionCriteria);
     }
 
     /**
@@ -263,44 +201,6 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
              contractionCriterion,
              ExpansionMode.MULTIPLICATIVE,
              null);
-    }
-
-    /**
-     * <p>
-     * Create a ResizableArray with the specified properties.</p>
-     * <p>
-     * Throws IllegalArgumentException if the following conditions are
-     * not met:
-     * <ul>
-     * <li><code>initialCapacity > 0</code></li>
-     * <li><code>expansionFactor > 1</code></li>
-     * <li><code>contractionFactor >= expansionFactor</code></li>
-     * <li><code>expansionMode in {MULTIPLICATIVE_MODE, ADDITIVE_MODE}</code>
-     * </li>
-     * </ul></p>
-     *
-     * @param initialCapacity the initial size of the internal storage array
-     * @param expansionFactor the array will be expanded based on this
-     *                        parameter
-     * @param contractionCriteria the contraction Criteria
-     * @param expansionMode  the expansion mode
-     * @throws MathIllegalArgumentException if parameters are not valid
-     * @deprecated As of 3.1. Please use
-     * {@link #ResizableDoubleArray(int,double,double,ExpansionMode,double[])}
-     * instead.
-     */
-    public ResizableDoubleArray(int initialCapacity, float expansionFactor,
-            float contractionCriteria, int expansionMode) throws MathIllegalArgumentException {
-        this(initialCapacity,
-             expansionFactor,
-             contractionCriteria,
-             expansionMode == ADDITIVE_MODE ?
-             ExpansionMode.ADDITIVE :
-             ExpansionMode.MULTIPLICATIVE,
-             null);
-        // XXX Just ot retain the expected failure in a unit test.
-        // With the new "enum", that test will become obsolete.
-        setExpansionMode(expansionMode);
     }
 
     /**
@@ -863,7 +763,7 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
      * @return the result.
      * @since 3.1
      */
-    public double compute(MathArrays.Function f) {
+    public double compute(Function f) {
         return f.evaluate(internalArray, startIndex, numElements);
     }
 
@@ -889,78 +789,6 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
             expandTo(startIndex + (index + 1));
         }
         internalArray[startIndex + index] = value;
-    }
-
-    /**
-     * Sets the expansionFactor.  Throws IllegalArgumentException if the
-     * the following conditions are not met:
-     * <ul>
-     * <li><code>expansionFactor > 1</code></li>
-     * <li><code>contractionFactor >= expansionFactor</code></li>
-     * </ul>
-     * @param expansionFactor the new expansion factor value.
-     * @throws MathIllegalArgumentException if expansionFactor is <= 1 or greater
-     * than contractionFactor
-     * @deprecated As of 3.1 (to be removed in 4.0 as field will become "final").
-     */
-    @Deprecated
-    public void setExpansionFactor(float expansionFactor) throws MathIllegalArgumentException {
-        checkContractExpand(getContractionCriterion(), expansionFactor);
-        // The check above verifies that the expansion factor is > 1.0;
-        synchronized(this) {
-            this.expansionFactor = expansionFactor;
-        }
-    }
-
-    /**
-     * Sets the <code>expansionMode</code>. The specified value must be one of
-     * ADDITIVE_MODE, MULTIPLICATIVE_MODE.
-     *
-     * @param expansionMode The expansionMode to set.
-     * @throws MathIllegalArgumentException if the specified mode value is not valid.
-     * @deprecated As of 3.1. Please use {@link #setExpansionMode(ExpansionMode)} instead.
-     */
-    @Deprecated
-    public void setExpansionMode(int expansionMode)
-        throws MathIllegalArgumentException {
-        if (expansionMode != MULTIPLICATIVE_MODE &&
-            expansionMode != ADDITIVE_MODE) {
-            throw new MathIllegalArgumentException(LocalizedFormats.UNSUPPORTED_EXPANSION_MODE, expansionMode,
-                                                   MULTIPLICATIVE_MODE, "MULTIPLICATIVE_MODE",
-                                                   ADDITIVE_MODE, "ADDITIVE_MODE");
-        }
-        synchronized(this) {
-            if (expansionMode == MULTIPLICATIVE_MODE) {
-                setExpansionMode(ExpansionMode.MULTIPLICATIVE);
-            } else if (expansionMode == ADDITIVE_MODE) {
-                setExpansionMode(ExpansionMode.ADDITIVE);
-            }
-        }
-    }
-
-    /**
-     * Sets the {@link ExpansionMode expansion mode}.
-     *
-     * @param expansionMode Expansion mode to use for resizing the array.
-     * @deprecated As of 3.1 (to be removed in 4.0 as field will become "final").
-     */
-    @Deprecated
-    public void setExpansionMode(ExpansionMode expansionMode) {
-        this.expansionMode = expansionMode;
-    }
-
-    /**
-     * Sets the initial capacity.  Should only be invoked by constructors.
-     *
-     * @param initialCapacity of the array
-     * @throws MathIllegalArgumentException if <code>initialCapacity</code> is not
-     * positive.
-     * @deprecated As of 3.1, this is a no-op.
-     */
-    @Deprecated
-    protected void setInitialCapacity(int initialCapacity)
-        throws MathIllegalArgumentException {
-        // Body removed in 3.1.
     }
 
     /**
@@ -1003,21 +831,6 @@ public class ResizableDoubleArray implements DoubleArray, Serializable {
         } else {
             return (internalArray.length - numElements) > contractionCriterion;
         }
-    }
-
-    /**
-     * Returns the starting index of the internal array.  The starting index is
-     * the position of the first addressable element in the internal storage
-     * array.  The addressable elements in the array are <code>
-     * internalArray[startIndex],...,internalArray[startIndex + numElements -1]
-     * </code>
-     *
-     * @return the starting index.
-     * @deprecated As of 3.1.
-     */
-    @Deprecated
-    public synchronized int start() {
-        return startIndex;
     }
 
     /**
